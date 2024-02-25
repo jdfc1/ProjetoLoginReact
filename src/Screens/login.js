@@ -1,7 +1,11 @@
 import { useNavigation } from '@react-navigation/core';
-import * as React from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Image,
-        TextInput } from 'react-native';
+        TextInput, ActivityIndicator } from 'react-native';
+
+import React, { useEffect, useState } from 'react';
+
+import { FIREBASE_AUTH } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import { ButtonGrande } from '../Components/buttonGrande';
 
@@ -10,7 +14,33 @@ import Logo from './../../assets/blue.png';
 
 const Login = () => {
 
+    const [ email, setEmail ] = useState('');
+    const [ password, setPassword ] = useState('');
+    const [ loading, setLoading ] = useState(false);
+    const auth = FIREBASE_AUTH;
+
     const navigation = useNavigation();
+
+    const signIn = async () => {
+        setLoading(true);
+        if (email !== '' || password !== '') {
+            try {
+                const response = await signInWithEmailAndPassword(auth, email, password);
+                console.log(response);
+                navigation.navigate('Home')
+            } catch (error) {
+                console.log(error);
+                alert('O Login falhou: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        else {
+            alert('É preciso informar um email que já tenha cadastro.')
+            return;
+        }
+
+    }
 
     function funcaoCadastro () {
         navigation.navigate('Cadastro')
@@ -21,33 +51,35 @@ const Login = () => {
         navigation.navigate('Redefinir')
     }
 
-    function funcaoHome () {
-        navigation.navigate('Home')
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <View>
                 <Image source={Logo} style={styles.logoview}/>
             </View>
             <View>
-                <Text style={styles.text}
-                >Login</Text>
+                <Text style={styles.text}>Viagens.com{"\n"}Login</Text>
             </View>
 
             <TextInput placeholder='Email'
                         heyboardType='email-address'
+                        autoCapitalize='none'
+                        value={email} // capturar o que foi digitado
+                        onChangeText={text => setEmail(text)} // onchange transfere para a variável setEmail
                         style={styles.input} />
 
             <TextInput placeholder='Password'
-                        secureTextEntry
-                        style={styles.input} />
+                        autoCapitalize='none'
+                        value={password}
+                        onChangeText={text => setPassword(text)} // onchange transfere para a variável setPassword
+                        style={styles.input} 
+                        secureTextEntry={true} />
+            
             
             <View style={styles.espacoButton}>
                 <ButtonGrande
-                    title='Autenticar'
-                    onPress={funcaoHome}
-                />
+                    title='Fazer Login'
+                    onPress={signIn} />
+
 
                 <ButtonGrande
                     title='Tela Fazer cadastro'
